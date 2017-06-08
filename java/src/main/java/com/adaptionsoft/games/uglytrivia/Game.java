@@ -4,19 +4,20 @@ import com.adaptionsoft.games.trivia.runner.Player;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Objects;
 
 public class Game {
 
-    private ArrayList<Player> players = new ArrayList();
+    private ArrayList<Player> players = new ArrayList<>();
 
     //make it a question class
-    LinkedList popQuestions = new LinkedList();
-    LinkedList scienceQuestions = new LinkedList();
-    LinkedList sportsQuestions = new LinkedList();
-    LinkedList rockQuestions = new LinkedList();
+    private LinkedList<String> popQuestions = new LinkedList<>();
+    private LinkedList<String> scienceQuestions = new LinkedList<>();
+    private LinkedList<String> sportsQuestions = new LinkedList<>();
+    private LinkedList<String> rockQuestions = new LinkedList<>();
     
-    int currentPlayer = 0;
-
+    private int currentPlayerPosition = 0;
+    private Player currentPlayer;
     public  Game(){
 
     	//Create questions outside of the class
@@ -24,15 +25,9 @@ public class Game {
 			popQuestions.addLast("Pop Question " + i);
 			scienceQuestions.addLast(("Science Question " + i));
 			sportsQuestions.addLast(("Sports Question " + i));
-			rockQuestions.addLast(createRockQuestion(i));
+			rockQuestions.addLast("Rock Question " + i);
     	}
     }
-
-	//function is not needed as it does the same as the other
-	public String createRockQuestion(int index){
-		return "Rock Question " + index;
-	}
-
 
 	public boolean addPlayer(Player player) {
 	    players.add(player);
@@ -43,23 +38,22 @@ public class Game {
 
 	//complicated logic with nested ifs
 	public void roll(int roll) {
-		Player player = players.get(currentPlayer);
-
-		System.out.println(  player.Name + " is the current player");
+        this.currentPlayer = players.get(currentPlayerPosition);
+		System.out.println(  this.currentPlayer.Name + " is the current player");
 		System.out.println("They have rolled a " + roll);
-		if(player.isInPenaltyBox){
+		if(this.currentPlayer.isInPenaltyBox){
 			//odd number gets player out of penalty box
 			if (roll % 2 != 0) {
-				System.out.println(player.Name + " is getting out of the penalty box");
-				player.isInPenaltyBox = false;
-				player.move(roll);
+				System.out.println(this.currentPlayer.Name + " is getting out of the penalty box");
+				this.currentPlayer.isInPenaltyBox = false;
+				this.currentPlayer.move(roll);
 			} else {
-				System.out.println(player.Name + " is not getting out of the penalty box");
+				System.out.println(this.currentPlayer.Name + " is not getting out of the penalty box");
 				}
 		} else {
 
-			player.move(roll);
-			System.out.println(player.Name + "'s new location is " + player.currentPosition);
+			this.currentPlayer.move(roll);
+			System.out.println(this.currentPlayer.Name + "'s new location is " + this.currentPlayer.currentPosition);
 			System.out.println("The category is " + currentCategory());
 		}
 		askQuestion();
@@ -70,57 +64,47 @@ public class Game {
 	private void askQuestion() {
 
 		//removeFirst is the same for each linked list. Make a class out of it
-		if (currentCategory() == "Pop")
+		if (Objects.equals(currentCategory(), "Pop"))
 			System.out.println(popQuestions.removeFirst());
-		if (currentCategory() == "Science")
+		if (Objects.equals(currentCategory(), "Science"))
 			System.out.println(scienceQuestions.removeFirst());
-		if (currentCategory() == "Sports")
+		if (Objects.equals(currentCategory(), "Sports"))
 			System.out.println(sportsQuestions.removeFirst());
-		if (currentCategory() == "Rock")
-			System.out.println(rockQuestions.removeFirst());		
+		if (Objects.equals(currentCategory(), "Rock"))
+			System.out.println(rockQuestions.removeFirst());
 	}
 
 	private String currentCategory() {
 		//repeated return statements, use case/switch or something better in Java 8
-		Player player = players.get(currentPlayer);
-		switch (player.currentPosition){
-			case 0:
-			case 4:
-			case 8:
-				return "Pop";
-			case 1:
-			case 5:
-			case 9:
-				return "Science";
-			case 2:
-			case 6:
-			case 10:
-				return "Sports";
-			default:
-				return "Rock";
+		if (this.currentPlayer.currentPosition == 0 || this.currentPlayer.currentPosition == 4 || this.currentPlayer.currentPosition == 8) {
+			return "Pop";
+		} else if (this.currentPlayer.currentPosition == 1 || this.currentPlayer.currentPosition == 5 || this.currentPlayer.currentPosition == 9) {
+			return "Science";
+		} else if (this.currentPlayer.currentPosition == 2 || this.currentPlayer.currentPosition == 6 || this.currentPlayer.currentPosition == 10) {
+			return "Sports";
+		} else {
+			return "Rock";
 		}
 	}
 
 	public boolean wasCorrectlyAnswered() {
-		Player player = players.get(currentPlayer);
-		if (!player.isInPenaltyBox){
+		if (!this.currentPlayer.isInPenaltyBox){
 			System.out.println("Answer was correct!!!!");
-			player.purseValue++;
-			System.out.println(player.Name + " now has " + player.purseValue + " Gold Coins.");
+			this.currentPlayer.purseValue++;
+			System.out.println(this.currentPlayer.Name + " now has " + this.currentPlayer.purseValue + " Gold Coins.");
 		}
 
-		currentPlayer = ++currentPlayer% players.size();
+		currentPlayerPosition = ++currentPlayerPosition % players.size();
 
-		return !player.isAWinner();
+		return !this.currentPlayer.isAWinner();
 
 	}
 	
 	public boolean wrongAnswer(){
 		System.out.println("Question was incorrectly answered");
-		Player player = players.get(currentPlayer);
-		System.out.println(player.Name + " was sent to the penalty box");
-		player.isInPenaltyBox = true;
-		currentPlayer = ++currentPlayer% players.size();
+		System.out.println(this.currentPlayer.Name + " was sent to the penalty box");
+		this.currentPlayer.isInPenaltyBox = true;
+		currentPlayerPosition = ++currentPlayerPosition % players.size();
 		return true;
 	}
 
